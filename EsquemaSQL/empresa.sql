@@ -1,67 +1,34 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Tempo de geração: 30/11/2024 às 03:28
--- Versão do servidor: 10.4.32-MariaDB
--- Versão do PHP: 8.2.12
+-- Criar o banco de dados
+CREATE DATABASE IF NOT EXISTS EmpresaDB;
+USE EmpresaDB;
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
+-- Tabela de empresas
+CREATE TABLE Empresa (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL
+);
 
+-- Tabela de funcionários
+CREATE TABLE Funcionario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    cargo VARCHAR(100) NOT NULL,
+    salario DECIMAL(10, 2) NOT NULL,
+    departamento_id INT,
+    FOREIGN KEY (departamento_id) REFERENCES Departamento(id) ON DELETE SET NULL
+);
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+-- Tabela de departamentos (criada após Funcionario para permitir FK circular)
+CREATE TABLE Departamento (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    empresa_id INT NOT NULL,
+    gerente_id INT DEFAULT NULL,
+    FOREIGN KEY (empresa_id) REFERENCES Empresa(id) ON DELETE CASCADE,
+    FOREIGN KEY (gerente_id) REFERENCES Funcionario(id) ON DELETE SET NULL
+);
 
---
--- Banco de dados: `empresa`
---
-
--- --------------------------------------------------------
-
---
--- Estrutura para tabela `funcionarios`
---
-
-CREATE TABLE `funcionarios` (
-  `rm` int(11) NOT NULL,
-  `nome` varchar(40) NOT NULL,
-  `cargo` varchar(40) NOT NULL,
-  `salario` float NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `funcionarios`
---
-
-INSERT INTO `funcionarios` (`rm`, `nome`, `cargo`, `salario`) VALUES
-(1, 'Alexandre Santos', 'Aprendiz de TI', 1326.5);
-
---
--- Índices para tabelas despejadas
---
-
---
--- Índices de tabela `funcionarios`
---
-ALTER TABLE `funcionarios`
-  ADD PRIMARY KEY (`rm`);
-
---
--- AUTO_INCREMENT para tabelas despejadas
---
-
---
--- AUTO_INCREMENT de tabela `funcionarios`
---
-ALTER TABLE `funcionarios`
-  MODIFY `rm` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+-- Ajuste da FK em Funcionario agora que Departamento existe
+ALTER TABLE Funcionario
+    ADD CONSTRAINT fk_departamento
+    FOREIGN KEY (departamento_id) REFERENCES Departamento(id) ON DELETE SET NULL;
