@@ -1,3 +1,5 @@
+-- https://dbdiagram.io/d/EmpresaBD-681c98af5b2fc4582fc15303
+
 -- Criar o banco de dados
 CREATE DATABASE IF NOT EXISTS EmpresaDB;
 USE EmpresaDB;
