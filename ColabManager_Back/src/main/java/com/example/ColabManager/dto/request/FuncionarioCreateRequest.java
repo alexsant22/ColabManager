@@ -1,4 +1,4 @@
-package com.example.ColabManager.dto;
+package com.example.ColabManager.dto.request;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FuncionarioUpdateRequestDTO {
+public class FuncionarioCreateRequest {
 
     @NotBlank(message = "Nome é obrigatório")
     @Size(max = 100, message = "Nome não pode exceder 100 caracteres")

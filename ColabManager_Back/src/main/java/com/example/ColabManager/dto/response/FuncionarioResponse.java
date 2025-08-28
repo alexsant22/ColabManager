@@ -1,4 +1,4 @@
-package com.example.ColabManager.dto;
+package com.example.ColabManager.dto.response;
 
 import com.example.ColabManager.entity.enums.StatusFuncionario;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FuncionarioResponseDTO {
+public class FuncionarioResponse {
     private Long id;
     private String nome;
     private String email;
