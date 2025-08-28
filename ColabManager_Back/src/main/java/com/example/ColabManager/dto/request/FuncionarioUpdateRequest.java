@@ -1,5 +1,6 @@
 package com.example.ColabManager.dto.request;
 
+import com.example.ColabManager.entity.Funcionario;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -42,4 +43,14 @@ public class FuncionarioUpdateRequest {
 
     @NotNull(message = "Departamento é obrigatório")
     private Long departamento_id;
+
+    // Método para aplicar updates em uma Entity existente
+    public void applyToEntity(Funcionario funcionario) {
+        funcionario.setNome(this.nome);
+        funcionario.setEmail(this.email);
+        funcionario.setCpf(this.cpf);
+        funcionario.setData_nascimento(this.data_nascimento);
+        funcionario.setSalario(this.salario);
+        funcionario.setData_admissao(this.data_admissao);
+    }
 }

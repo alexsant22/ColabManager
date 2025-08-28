@@ -1,5 +1,7 @@
 package com.example.ColabManager.dto.request;
 
+import com.example.ColabManager.entity.Funcionario;
+import com.example.ColabManager.entity.enums.StatusFuncionario;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -42,4 +44,17 @@ public class FuncionarioCreateRequest {
 
     @NotNull(message = "Departamento é obrigatório")
     private Long departamento_id;
+
+    // Método para converter para Entity
+    public Funcionario toEntity() {
+        Funcionario funcionario = new Funcionario();
+        funcionario.setNome(this.nome);
+        funcionario.setEmail(this.email);
+        funcionario.setCpf(this.cpf);
+        funcionario.setData_nascimento(this.data_nascimento);
+        funcionario.setSalario(this.salario);
+        funcionario.setData_admissao(this.data_admissao);
+        funcionario.setStatus(StatusFuncionario.ATIVO); // Status padrão
+        return funcionario;
+    }
 }
