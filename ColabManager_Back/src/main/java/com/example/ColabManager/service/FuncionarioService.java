@@ -41,6 +41,14 @@ public class FuncionarioService {
         return FuncionarioResponse.fromEntity(funcionario);
     }
 
+    // GET /funcionarios/{cpf} - Retorna detalhes de um funcionário específico
+    @Transactional(readOnly = true)
+    public FuncionarioResponse findByCpf(String cpf)  {
+        Funcionario funcionario = funcionarioRepository.findByCpf(cpf)
+                .orElseThrow(() -> new RuntimeException("Funcionário não encontrado com CPF: " + cpf));
+        return FuncionarioResponse.fromEntity(funcionario);
+    }
+
     // POST /funcionarios - Cadastra um novo funcionário
     @Transactional
     public FuncionarioResponse create(FuncionarioCreateRequest request) {
