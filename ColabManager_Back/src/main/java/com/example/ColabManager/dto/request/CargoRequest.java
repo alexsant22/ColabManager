@@ -1,5 +1,6 @@
 package com.example.ColabManager.dto.request;
 
+import com.example.ColabManager.entity.Cargo;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -20,4 +21,20 @@ public class CargoRequest {
 
     @NotBlank(message = "Descrição do cargo é obrigatória")
     private String descricao;
+
+    // Método para converter para Entity
+    public Cargo toEntity() {
+        Cargo cargo = new Cargo();
+        cargo.setNome(this.nome);
+        cargo.setNivel(this.nivel);
+        cargo.setDescricao(this.descricao);
+        return cargo;
+    }
+
+    // Método para aplicar updates em uma Entity existente
+    public void applyToEntity(Cargo cargo) {
+        cargo.setNome(this.nome);
+        cargo.setNivel(this.nivel);
+        cargo.setDescricao(this.descricao);
+    }
 }
