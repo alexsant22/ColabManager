@@ -41,7 +41,7 @@ Este projeto é construído com as seguintes tecnologias de ponta:
     * Spring Security 🔒
     * Lombok 🏗️
 * **Banco de Dados:**
-    * MySQL 🐬
+    * PostgreSQL 🐘
     * Hibernate 🌐
 * **Gerenciamento de Dependências:**
     * Maven 📦
