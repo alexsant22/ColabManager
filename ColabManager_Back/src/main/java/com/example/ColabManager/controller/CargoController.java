@@ -3,7 +3,9 @@ package com.example.ColabManager.controller;
 import com.example.ColabManager.dto.request.CargoRequest;
 import com.example.ColabManager.dto.response.CargoResponse;
 import com.example.ColabManager.service.CargoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +33,14 @@ public class CargoController {
     }
 
     // POST /api/cargos - Cadastra um novo cargo
+    @PostMapping
+    public ResponseEntity<CargoResponse> createCargo(
+            @Valid @RequestBody CargoRequest request) {
+        CargoResponse createdCargo = cargoService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdCargo);
+    }
+
+    // PUT /api/cargos - Edita um novo cargo
     @PutMapping("/{id}")
     public ResponseEntity<CargoResponse> updateCargo(@PathVariable Long id, @RequestBody CargoRequest request) {
         CargoResponse updatedCargo = cargoService.update(id, request);
