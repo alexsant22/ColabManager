@@ -23,61 +23,56 @@ public class FuncionarioController {
     // GET /funcionarios - Lista todos os funcionários
     @GetMapping
     public ResponseEntity<List<FuncionarioResponse>> getAllFuncionarios() {
-        List<FuncionarioResponse> funcionarios = funcionarioService.findAll();
-        return ResponseEntity.ok(funcionarios);
+        return ResponseEntity.ok(funcionarioService.findAll());
     }
 
     // GET /funcionarios/{id} - Retorna detalhes de um funcionário específico
     @GetMapping("/{id}")
     public ResponseEntity<FuncionarioResponse> getFuncionarioById(@PathVariable Long id) {
-        FuncionarioResponse funcionario = funcionarioService.findById(id);
-        return ResponseEntity.ok(funcionario);
+        return ResponseEntity.ok(funcionarioService.findById(id));
     }
 
-    // GET /funcionarios/cpf/{cpf} - Retorna funcionário por CPF
+    // GET /funcionarios/cpf/{cpf} - Retorna detalhes de um funcionário específico pelo CPF
     @GetMapping("/cpf/{cpf}")
     public ResponseEntity<FuncionarioResponse> getFuncionarioByCpf(@PathVariable String cpf) {
-        FuncionarioResponse funcionario = funcionarioService.findByCpf(cpf);
-        return ResponseEntity.ok(funcionario);
+        return ResponseEntity.ok(funcionarioService.findByCpf(cpf));
     }
 
-    // GET /funcionarios/status/{status} - Busca funcionários por status
+    // GET /funcionarios/status/{status} - Retorna funcionários por status
     @GetMapping("/status/{status}")
     public ResponseEntity<List<FuncionarioResponse>> getFuncionariosByStatus(
             @PathVariable StatusFuncionario status) {
-        List<FuncionarioResponse> funcionarios = funcionarioService.findByStatus(status);
-        return ResponseEntity.ok(funcionarios);
+        return ResponseEntity.ok(funcionarioService.findByStatus(status));
     }
 
-    // GET /funcionarios/cargo/{cargoId} - Busca funcionários por cargo
+    // GET /funcionarios/cargo/{cargoId} - Retorna funcionários por cargo
     @GetMapping("/cargo/{cargoId}")
     public ResponseEntity<List<FuncionarioResponse>> getFuncionariosByCargo(@PathVariable Long cargoId) {
-        List<FuncionarioResponse> funcionarios = funcionarioService.findByCargo(cargoId);
-        return ResponseEntity.ok(funcionarios);
+        return ResponseEntity.ok(funcionarioService.findByCargo(cargoId));
     }
 
-    // GET /funcionarios/departamento/{departamentoId} - Busca funcionários por departamento
+    // GET /funcionarios/departamento/{departamentoId} - Retorna funcionários por departamento
     @GetMapping("/departamento/{departamentoId}")
-    public ResponseEntity<List<FuncionarioResponse>> getFuncionariosByDepartamento(@PathVariable Long departamentoId) {
-        List<FuncionarioResponse> funcionarios = funcionarioService.findByDepartamento(departamentoId);
-        return ResponseEntity.ok(funcionarios);
+    public ResponseEntity<List<FuncionarioResponse>> getFuncionariosByDepartamento(
+            @PathVariable Long departamentoId) {
+        return ResponseEntity.ok(funcionarioService.findByDepartamento(departamentoId));
     }
 
     // POST /funcionarios - Cadastra um novo funcionário
     @PostMapping
     public ResponseEntity<FuncionarioResponse> createFuncionario(
             @Valid @RequestBody FuncionarioCreateRequest request) {
-        FuncionarioResponse novoFuncionario = funcionarioService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoFuncionario);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(funcionarioService.create(request));
     }
 
-    // PUT /funcionarios/{id} - Atualiza os dados de um funcionário
+    // PUT /funcionarios/{id} - Atualiza os dados de um funcionário existente
     @PutMapping("/{id}")
     public ResponseEntity<FuncionarioResponse> updateFuncionario(
             @PathVariable Long id,
             @Valid @RequestBody FuncionarioUpdateRequest request) {
-        FuncionarioResponse funcionarioAtualizado = funcionarioService.update(id, request);
-        return ResponseEntity.ok(funcionarioAtualizado);
+        return ResponseEntity.ok(funcionarioService.update(id, request));
     }
 
     // DELETE /funcionarios/{id} - Remove um funcionário
@@ -85,11 +80,5 @@ public class FuncionarioController {
     public ResponseEntity<Void> deleteFuncionario(@PathVariable Long id) {
         funcionarioService.delete(id);
         return ResponseEntity.noContent().build();
-    }
-
-    // Exception Handler para tratar as RuntimeExceptions do Service
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }
