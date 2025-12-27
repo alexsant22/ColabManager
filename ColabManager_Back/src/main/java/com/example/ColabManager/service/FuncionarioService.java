@@ -8,6 +8,7 @@ import com.example.ColabManager.entity.Departamento;
 import com.example.ColabManager.entity.Funcionario;
 import com.example.ColabManager.entity.HistoricoFuncionario;
 import com.example.ColabManager.entity.enums.StatusFuncionario;
+import com.example.ColabManager.entity.enums.TipoHistorico;
 import com.example.ColabManager.exception.BusinessException;
 import com.example.ColabManager.exception.ResourceNotFoundException;
 import com.example.ColabManager.repository.CargoRepo;
@@ -43,21 +44,24 @@ public class FuncionarioService {
     @Transactional(readOnly = true)
     public FuncionarioResponse findById(Long id) {
         Funcionario funcionario = funcionarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Funcionário não encontrado com ID: " + id));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Funcionário não encontrado com ID: " + id));
         return FuncionarioResponse.fromEntity(funcionario);
     }
 
     // GET /funcionarios/{cpf} - Retorna detalhes de um funcionário específico
     @Transactional(readOnly = true)
-    public FuncionarioResponse findByCpf(String cpf)  {
+    public FuncionarioResponse findByCpf(String cpf) {
         Funcionario funcionario = funcionarioRepository.findByCpf(cpf)
-                .orElseThrow(() -> new ResourceNotFoundException("Funcionário não encontrado com CPF: " + cpf));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Funcionário não encontrado com CPF: " + cpf));
         return FuncionarioResponse.fromEntity(funcionario);
     }
 
     // POST /funcionarios - Cadastra um novo funcionário
     @Transactional
     public FuncionarioResponse create(FuncionarioCreateRequest request) {
+
         // Verificar se CPF já existe
         if (funcionarioRepository.existsByCpf(request.getCpf())) {
             throw new BusinessException("CPF já cadastrado: " + request.getCpf());
@@ -73,12 +77,14 @@ public class FuncionarioService {
 
         // Buscar e validar cargo
         Cargo cargo = cargoRepository.findById(request.getCargo_id())
-                .orElseThrow(() -> new ResourceNotFoundException("Cargo não encontrado com ID: " + request.getCargo_id()));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Cargo não encontrado com ID: " + request.getCargo_id()));
         funcionario.setCargo(cargo);
 
         // Buscar e validar departamento
         Departamento departamento = departamentoRepository.findById(request.getDepartamento_id())
-                .orElseThrow(() -> new ResourceNotFoundException("Departamento não encontrado com ID: " + request.getDepartamento_id()));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Departamento não encontrado com ID: " + request.getDepartamento_id()));
         funcionario.setDepartamento(departamento);
 
         // Salvar funcionário
@@ -94,8 +100,7 @@ public class FuncionarioService {
         // Buscar funcionário
         Funcionario funcionario = funcionarioRepository.findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Funcionário não encontrado com ID: " + id)
-                );
+                        new ResourceNotFoundException("Funcionário não encontrado com ID: " + id));
 
         // Validar CPF
         if (!funcionario.getCpf().equals(request.getCpf()) &&
@@ -117,16 +122,13 @@ public class FuncionarioService {
         Long cargoIdAnterior = funcionario.getCargo().getId();
         Long departamentoIdAnterior = funcionario.getDepartamento().getId();
 
-        // Atualizar campos básicos
-        request.applyToEntity(funcionario);
-
         // ===== HISTÓRICO: SALÁRIO =====
-        if (salarioAnterior.compareTo(funcionario.getSalario()) != 0) {
+        if (salarioAnterior.compareTo(request.getSalario()) != 0) {
             registrarHistorico(
                     funcionario,
-                    "SALARIO",
+                    TipoHistorico.SALARIO,
                     "Salário alterado de R$ " + salarioAnterior +
-                            " para R$ " + funcionario.getSalario()
+                            " para R$ " + request.getSalario()
             );
         }
 
@@ -135,17 +137,16 @@ public class FuncionarioService {
 
             Cargo novoCargo = cargoRepository.findById(request.getCargo_id())
                     .orElseThrow(() ->
-                            new ResourceNotFoundException("Cargo não encontrado com ID: " + request.getCargo_id())
-                    );
-
-            funcionario.setCargo(novoCargo);
+                            new ResourceNotFoundException("Cargo não encontrado com ID: " + request.getCargo_id()));
 
             registrarHistorico(
                     funcionario,
-                    "CARGO",
+                    TipoHistorico.CARGO,
                     "Cargo alterado de '" + cargoAnterior +
                             "' para '" + novoCargo.getNome() + "'"
             );
+
+            funcionario.setCargo(novoCargo);
         }
 
         // ===== HISTÓRICO: DEPARTAMENTO =====
@@ -153,18 +154,20 @@ public class FuncionarioService {
 
             Departamento novoDepartamento = departamentoRepository.findById(request.getDepartamento_id())
                     .orElseThrow(() ->
-                            new ResourceNotFoundException("Departamento não encontrado com ID: " + request.getDepartamento_id())
-                    );
-
-            funcionario.setDepartamento(novoDepartamento);
+                            new ResourceNotFoundException("Departamento não encontrado com ID: " + request.getDepartamento_id()));
 
             registrarHistorico(
                     funcionario,
-                    "DEPARTAMENTO",
+                    TipoHistorico.DEPARTAMENTO,
                     "Departamento alterado de '" + departamentoAnterior +
                             "' para '" + novoDepartamento.getNome() + "'"
             );
+
+            funcionario.setDepartamento(novoDepartamento);
         }
+
+        // Atualizar campos básicos
+        request.applyToEntity(funcionario);
 
         // Salvar funcionário atualizado
         Funcionario updatedFuncionario = funcionarioRepository.save(funcionario);
@@ -175,19 +178,15 @@ public class FuncionarioService {
     // DELETE /funcionarios/{id} - Remove um funcionário
     @Transactional
     public void delete(Long id) {
+
         // Verificar se funcionário existe
         Funcionario funcionario = funcionarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Funcionário não encontrado com ID: " + id));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Funcionário não encontrado com ID: " + id));
 
         // Verificar se tem usuário vinculado (depende da regra de negócio)
         if (funcionario.getUsuario() != null) {
             throw new BusinessException("Não é possível excluir funcionário com usuário vinculado");
-        }
-
-        // Verificar se tem histórico (opcional - depende da regra)
-        if (funcionario.getHistoricos() != null && !funcionario.getHistoricos().isEmpty()) {
-            // Pode ser que você queira manter o histórico mesmo excluindo o funcionário
-            // Nesse caso, apenas remove o funcionário e mantém o histórico
         }
 
         // Excluir funcionário
@@ -219,7 +218,7 @@ public class FuncionarioService {
     // Registra uma entrada no histórico do funcionário
     private void registrarHistorico(
             Funcionario funcionario,
-            String tipo,
+            TipoHistorico tipo,
             String descricao
     ) {
         HistoricoFuncionario historico = new HistoricoFuncionario();
@@ -229,6 +228,4 @@ public class FuncionarioService {
 
         historicoFuncionarioRepository.save(historico);
     }
-
-
 }
