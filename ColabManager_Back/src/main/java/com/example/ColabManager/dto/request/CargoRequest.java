@@ -3,6 +3,7 @@ package com.example.ColabManager.dto.request;
 import com.example.ColabManager.entity.Cargo;
 import com.example.ColabManager.entity.enums.NivelCargo;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,7 +17,7 @@ public class CargoRequest {
     @Size(max = 50, message = "Nome não pode exceder 50 caracteres")
     private String nome;
 
-    @NotBlank(message = "Nível do cargo é obrigatório")
+    @NotNull(message = "Nível do cargo é obrigatório")
     private NivelCargo nivel;
 
     @NotBlank(message = "Descrição do cargo é obrigatória")
