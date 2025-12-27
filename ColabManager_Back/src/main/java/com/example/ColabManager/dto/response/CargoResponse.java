@@ -1,6 +1,7 @@
 package com.example.ColabManager.dto.response;
 
 import com.example.ColabManager.entity.Cargo;
+import com.example.ColabManager.entity.enums.NivelCargo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class CargoResponse {
     private Long id;
     private String nome;
-    private String nivel;
+    private NivelCargo nivel;
     private String descricao;
     private int quantidadeFuncionarios;
 
@@ -20,11 +21,10 @@ public class CargoResponse {
         CargoResponse response = new CargoResponse();
         response.setId(cargo.getId());
         response.setNome(cargo.getNome());
-        response.setNivel(cargo.getNivel().name());
+        response.setNivel(cargo.getNivel());
         response.setDescricao(cargo.getDescricao());
         response.setQuantidadeFuncionarios(cargo.getFuncionarios() != null ? cargo.getFuncionarios().size() : 0);
 
         return response;
     }
-
 }

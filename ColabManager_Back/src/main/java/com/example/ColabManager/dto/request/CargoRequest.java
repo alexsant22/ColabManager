@@ -17,8 +17,7 @@ public class CargoRequest {
     private String nome;
 
     @NotBlank(message = "Nível do cargo é obrigatório")
-    @Size(max = 20, message = "Nível não pode exceder 20 caracteres")
-    private String nivel;
+    private NivelCargo nivel;
 
     @NotBlank(message = "Descrição do cargo é obrigatória")
     private String descricao;
@@ -27,7 +26,7 @@ public class CargoRequest {
     public Cargo toEntity() {
         Cargo cargo = new Cargo();
         cargo.setNome(this.nome);
-        cargo.setNivel(NivelCargo.valueOf(this.nivel.toUpperCase())); // Converte String para Enum
+        cargo.setNivel(this.nivel);
         cargo.setDescricao(this.descricao);
         return cargo;
     }
@@ -35,7 +34,7 @@ public class CargoRequest {
     // Método para aplicar updates em uma Entity existente
     public void applyToEntity(Cargo cargo) {
         cargo.setNome(this.nome);
-        cargo.setNivel(NivelCargo.valueOf(this.nivel.toUpperCase())); // Converte String para Enum
+        cargo.setNivel(this.nivel);
         cargo.setDescricao(this.descricao);
     }
 }
