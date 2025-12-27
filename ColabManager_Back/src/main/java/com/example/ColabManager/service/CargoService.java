@@ -3,6 +3,8 @@ package com.example.ColabManager.service;
 import com.example.ColabManager.dto.request.CargoRequest;
 import com.example.ColabManager.dto.response.CargoResponse;
 import com.example.ColabManager.entity.Cargo;
+import com.example.ColabManager.exception.BusinessException;
+import com.example.ColabManager.exception.ResourceNotFoundException;
 import com.example.ColabManager.repository.CargoRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,16 +31,18 @@ public class CargoService {
     // GET /cargos/{id} - Retorna detalhes de um cargo específico
     public CargoResponse findById(Long id) {
         Cargo cargo = cargoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cargo não encontrado com ID: " + id));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Cargo não encontrado com ID: " + id));
         return CargoResponse.fromEntity(cargo);
     }
 
     @Transactional
     // POST /cargos - Cadastra um novo cargo
     public CargoResponse create(CargoRequest request) {
+
         // Verificar se o nome do cargo já existe
         if (cargoRepository.existsByNome(request.getNome())) {
-            throw new RuntimeException("Nome do cargo já cadastrado: " + request.getNome());
+            throw new BusinessException("Nome do cargo já cadastrado: " + request.getNome());
         }
 
         // Converter request para entity
@@ -53,9 +57,17 @@ public class CargoService {
     @Transactional
     // PUT /cargos/{id} - Atualiza um cargo existente
     public CargoResponse update(Long id, CargoRequest request) {
+
         // Buscar o cargo existente
         Cargo existingCargo = cargoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cargo não encontrado com ID: " + id));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Cargo não encontrado com ID: " + id));
+
+        // Verificar se está tentando alterar o nome para um já existente
+        if (!existingCargo.getNome().equals(request.getNome())
+                && cargoRepository.existsByNome(request.getNome())) {
+            throw new BusinessException("Nome do cargo já cadastrado: " + request.getNome());
+        }
 
         // Aplicar as atualizações
         request.applyToEntity(existingCargo);
@@ -69,13 +81,17 @@ public class CargoService {
     // DELETE /cargos/{id} - Remove um cargo existente
     @Transactional
     public void delete(Long id) {
+
         // Verificar se o cargo existe
         Cargo cargo = cargoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cargo não encontrado com ID: " + id));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Cargo não encontrado com ID: " + id));
 
         // Verificar se o cargo está associado a algum funcionário
         if (cargo.getFuncionarios() != null && !cargo.getFuncionarios().isEmpty()) {
-            throw new RuntimeException("Não é possível deletar o cargo, pois está associado a funcionários.");
+            throw new BusinessException(
+                    "Não é possível deletar o cargo, pois está associado a funcionários."
+            );
         }
 
         // Deletar o cargo
