@@ -25,12 +25,12 @@ public class HistoricoFuncionario {
     @Column(nullable = false)
     private String descricao;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime alterado_em;
+    @Column(name = "alterado_em", nullable = false, updatable = false)
+    private LocalDateTime alteradoEm;
 
     @PrePersist
     public void prePersist() {
-        this.alterado_em = LocalDateTime.now();
+        this.alteradoEm = LocalDateTime.now();
     }
 
     // Relacionamentos
