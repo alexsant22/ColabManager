@@ -1,6 +1,7 @@
 package com.example.ColabManager.entity;
 
 import com.example.ColabManager.entity.enums.TipoHistorico;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,7 +33,9 @@ public class HistoricoFuncionario {
         this.alterado_em = LocalDateTime.now();
     }
 
+    // Relacionamentos
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "funcionario_id", nullable = false)
+    @JsonIgnore // Evita loop infinito no JSON
     private Funcionario funcionario;
 }

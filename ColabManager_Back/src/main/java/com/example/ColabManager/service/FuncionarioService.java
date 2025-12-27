@@ -3,18 +3,12 @@ package com.example.ColabManager.service;
 import com.example.ColabManager.dto.request.FuncionarioCreateRequest;
 import com.example.ColabManager.dto.request.FuncionarioUpdateRequest;
 import com.example.ColabManager.dto.response.FuncionarioResponse;
-import com.example.ColabManager.entity.Cargo;
-import com.example.ColabManager.entity.Departamento;
-import com.example.ColabManager.entity.Funcionario;
-import com.example.ColabManager.entity.HistoricoFuncionario;
+import com.example.ColabManager.entity.*;
 import com.example.ColabManager.entity.enums.StatusFuncionario;
 import com.example.ColabManager.entity.enums.TipoHistorico;
 import com.example.ColabManager.exception.BusinessException;
 import com.example.ColabManager.exception.ResourceNotFoundException;
-import com.example.ColabManager.repository.CargoRepo;
-import com.example.ColabManager.repository.DepartamentoRepo;
-import com.example.ColabManager.repository.FuncionarioRepo;
-import com.example.ColabManager.repository.HistoricoFuncionarioRepo;
+import com.example.ColabManager.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +43,7 @@ public class FuncionarioService {
         return FuncionarioResponse.fromEntity(funcionario);
     }
 
-    // GET /funcionarios/{cpf} - Retorna detalhes de um funcionário específico
+    // GET /funcionarios/cpf/{cpf}
     @Transactional(readOnly = true)
     public FuncionarioResponse findByCpf(String cpf) {
         Funcionario funcionario = funcionarioRepository.findByCpf(cpf)
@@ -58,16 +52,30 @@ public class FuncionarioService {
         return FuncionarioResponse.fromEntity(funcionario);
     }
 
-    // POST /funcionarios - Cadastra um novo funcionário
+    // GET /funcionarios/{id}/historico
+    @Transactional(readOnly = true)
+    public List<HistoricoFuncionario> getHistorico(Long funcionarioId) {
+
+        if (!funcionarioRepository.existsById(funcionarioId)) {
+            throw new ResourceNotFoundException(
+                    "Funcionário não encontrado com ID: " + funcionarioId
+            );
+        }
+
+        return historicoFuncionarioRepository
+                .findByFuncionarioIdOrderByAlteradoEmDesc(funcionarioId);
+    }
+
+    // POST /funcionarios
     @Transactional
     public FuncionarioResponse create(FuncionarioCreateRequest request) {
 
-        // Verificar se CPF já existe
+        // Verificar CPF
         if (funcionarioRepository.existsByCpf(request.getCpf())) {
             throw new BusinessException("CPF já cadastrado: " + request.getCpf());
         }
 
-        // Verificar se email já existe
+        // Verificar Email
         if (funcionarioRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException("Email já cadastrado: " + request.getEmail());
         }
@@ -75,13 +83,13 @@ public class FuncionarioService {
         // Converter request para entity
         Funcionario funcionario = request.toEntity();
 
-        // Buscar e validar cargo
+        // Cargo
         Cargo cargo = cargoRepository.findById(request.getCargo_id())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Cargo não encontrado com ID: " + request.getCargo_id()));
         funcionario.setCargo(cargo);
 
-        // Buscar e validar departamento
+        // Departamento
         Departamento departamento = departamentoRepository.findById(request.getDepartamento_id())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Departamento não encontrado com ID: " + request.getDepartamento_id()));
@@ -90,14 +98,20 @@ public class FuncionarioService {
         // Salvar funcionário
         Funcionario savedFuncionario = funcionarioRepository.save(funcionario);
 
+        // ===== HISTÓRICO: CRIAÇÃO =====
+        registrarHistorico(
+                savedFuncionario,
+                TipoHistorico.CRIACAO,
+                "Funcionário cadastrado no sistema"
+        );
+
         return FuncionarioResponse.fromEntity(savedFuncionario);
     }
 
-    // PUT /funcionarios/{id} - Atualiza os dados de um funcionário
+    // PUT /funcionarios/{id}
     @Transactional
     public FuncionarioResponse update(Long id, FuncionarioUpdateRequest request) {
 
-        // Buscar funcionário
         Funcionario funcionario = funcionarioRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Funcionário não encontrado com ID: " + id));
@@ -114,10 +128,16 @@ public class FuncionarioService {
             throw new BusinessException("Email já cadastrado: " + request.getEmail());
         }
 
-        // Capturar valores antigos (ANTES do update)
+        // Valores anteriores
         BigDecimal salarioAnterior = funcionario.getSalario();
-        String cargoAnterior = funcionario.getCargo().getNome();
-        String departamentoAnterior = funcionario.getDepartamento().getNome();
+
+        String cargoAnterior = funcionario.getCargo() != null
+                ? funcionario.getCargo().getNome()
+                : "N/A";
+
+        String departamentoAnterior = funcionario.getDepartamento() != null
+                ? funcionario.getDepartamento().getNome()
+                : "N/A";
 
         Long cargoIdAnterior = funcionario.getCargo().getId();
         Long departamentoIdAnterior = funcionario.getDepartamento().getId();
@@ -166,16 +186,18 @@ public class FuncionarioService {
             funcionario.setDepartamento(novoDepartamento);
         }
 
-        // Atualizar campos básicos
+        // Atualizar dados básicos
         request.applyToEntity(funcionario);
 
-        // Salvar funcionário atualizado
+        // Garantir atualização explícita do salário
+        funcionario.setSalario(request.getSalario());
+
         Funcionario updatedFuncionario = funcionarioRepository.save(funcionario);
 
         return FuncionarioResponse.fromEntity(updatedFuncionario);
     }
 
-    // DELETE /funcionarios/{id} - Remove um funcionário
+    // DELETE /funcionarios/{id}
     @Transactional
     public void delete(Long id) {
 
@@ -184,16 +206,36 @@ public class FuncionarioService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Funcionário não encontrado com ID: " + id));
 
-        // Verificar se tem usuário vinculado (depende da regra de negócio)
-        if (funcionario.getUsuario() != null) {
-            throw new BusinessException("Não é possível excluir funcionário com usuário vinculado");
+        // Verificar se já está inativo
+        if (funcionario.getStatus() == StatusFuncionario.INATIVO) {
+            throw new BusinessException("Funcionário já está inativo");
         }
 
-        // Excluir funcionário
-        funcionarioRepository.delete(funcionario);
+        // Regra de negócio: não permitir inativar funcionário demitido
+        if (funcionario.getStatus() == StatusFuncionario.DEMITIDO) {
+            throw new BusinessException("Funcionário demitido não pode ser inativado");
+        }
+
+        // Verificar se tem usuário vinculado
+        if (funcionario.getUsuario() != null) {
+            throw new BusinessException("Não é possível inativar funcionário com usuário vinculado");
+        }
+
+        // Soft delete
+        funcionario.setStatus(StatusFuncionario.INATIVO);
+
+        // Histórico
+        registrarHistorico(
+                funcionario,
+                TipoHistorico.INATIVACAO,
+                "Funcionário inativado no sistema"
+        );
+
+        funcionarioRepository.save(funcionario);
     }
 
-    // Métodos auxiliares opcionais
+    // ===== CONSULTAS AUXILIARES =====
+
     @Transactional(readOnly = true)
     public List<FuncionarioResponse> findByCargo(Long cargoId) {
         return funcionarioRepository.findByCargoId(cargoId).stream()
@@ -215,7 +257,7 @@ public class FuncionarioService {
                 .collect(Collectors.toList());
     }
 
-    // Registra uma entrada no histórico do funcionário
+    // ===== REGISTRO DE HISTÓRICO =====
     private void registrarHistorico(
             Funcionario funcionario,
             TipoHistorico tipo,

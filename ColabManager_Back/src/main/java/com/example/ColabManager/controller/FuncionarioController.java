@@ -3,6 +3,7 @@ package com.example.ColabManager.controller;
 import com.example.ColabManager.dto.request.FuncionarioCreateRequest;
 import com.example.ColabManager.dto.request.FuncionarioUpdateRequest;
 import com.example.ColabManager.dto.response.FuncionarioResponse;
+import com.example.ColabManager.entity.HistoricoFuncionario;
 import com.example.ColabManager.entity.enums.StatusFuncionario;
 import com.example.ColabManager.service.FuncionarioService;
 import jakarta.validation.Valid;
@@ -56,6 +57,14 @@ public class FuncionarioController {
     public ResponseEntity<List<FuncionarioResponse>> getFuncionariosByDepartamento(
             @PathVariable Long departamentoId) {
         return ResponseEntity.ok(funcionarioService.findByDepartamento(departamentoId));
+    }
+
+    // GET /funcionarios/{id}/historico - Retorna histórico de alterações
+    @GetMapping("/{id}/historico")
+    public ResponseEntity<List<HistoricoFuncionario>> getHistoricoFuncionario(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(funcionarioService.getHistorico(id));
     }
 
     // POST /funcionarios - Cadastra um novo funcionário
