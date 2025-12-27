@@ -1,18 +1,18 @@
 package com.example.ColabManager.entity;
 
+import com.example.ColabManager.entity.enums.NivelCargo;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Cargo {
-    // Atributos
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,13 +20,13 @@ public class Cargo {
     @Column(nullable = false, length = 50)
     private String nome;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String nivel;
+    private NivelCargo nivel;
 
     @Column(nullable = false)
     private String descricao;
 
-    // Relacionamentos
-    @OneToMany(mappedBy = "cargo")
+    @OneToMany(mappedBy = "cargo", fetch = FetchType.LAZY)
     private List<Funcionario> funcionarios;
 }

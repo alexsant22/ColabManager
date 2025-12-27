@@ -2,9 +2,7 @@ package com.example.ColabManager.entity;
 
 import com.example.ColabManager.entity.enums.StatusFuncionario;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,7 +10,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Funcionario {
@@ -50,20 +49,23 @@ public class Funcionario {
     @PrePersist
     public void prePersist() {
         this.criado_em = LocalDateTime.now();
+        if (this.status == null) {
+            this.status = StatusFuncionario.ATIVO; // Define status padrão como ATIVO
+        }
     }
 
     // Relacionamentos
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cargo_id", nullable = false)
     private Cargo cargo;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "departamento_id", nullable = false)
     private Departamento departamento;
 
-    @OneToOne(mappedBy = "funcionario", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "funcionario", fetch = FetchType.LAZY)
     private Usuario usuario;
 
-    @OneToMany(mappedBy = "funcionario", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "funcionario", fetch = FetchType.LAZY)
     private List<HistoricoFuncionario> historicos;
 }

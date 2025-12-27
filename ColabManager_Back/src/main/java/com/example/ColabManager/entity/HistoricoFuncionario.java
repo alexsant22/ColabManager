@@ -1,39 +1,38 @@
 package com.example.ColabManager.entity;
 
+import com.example.ColabManager.entity.enums.TipoHistorico;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class HistoricoFuncionario {
-    // Atributos
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
-    private String tipo; // Tipo de alteração
+    private TipoHistorico tipo;
 
     @Column(nullable = false)
     private String descricao;
 
-    @Column(nullable = false, updatable = false) // Não permite alteração depois
+    @Column(nullable = false, updatable = false)
     private LocalDateTime alterado_em;
 
-    // Executado antes de inserir no banco
     @PrePersist
     public void prePersist() {
         this.alterado_em = LocalDateTime.now();
     }
 
-    // Relacionamentos
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "funcionario_id", nullable = false)
     private Funcionario funcionario;
 }
