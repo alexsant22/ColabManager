@@ -1,6 +1,7 @@
 package com.example.ColabManager.dto.request;
 
 import com.example.ColabManager.entity.Cargo;
+import com.example.ColabManager.entity.enums.NivelCargo;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -26,7 +27,7 @@ public class CargoRequest {
     public Cargo toEntity() {
         Cargo cargo = new Cargo();
         cargo.setNome(this.nome);
-        cargo.setNivel(this.nivel);
+        cargo.setNivel(NivelCargo.valueOf(this.nivel.toUpperCase())); // Converte String para Enum
         cargo.setDescricao(this.descricao);
         return cargo;
     }
@@ -34,7 +35,7 @@ public class CargoRequest {
     // Método para aplicar updates em uma Entity existente
     public void applyToEntity(Cargo cargo) {
         cargo.setNome(this.nome);
-        cargo.setNivel(this.nivel);
+        cargo.setNivel(NivelCargo.valueOf(this.nivel.toUpperCase())); // Converte String para Enum
         cargo.setDescricao(this.descricao);
     }
 }

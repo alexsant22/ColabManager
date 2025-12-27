@@ -45,7 +45,7 @@ public class FuncionarioResponse {
 
         if (funcionario.getCargo() != null) {
             response.setCargoNome(funcionario.getCargo().getNome());
-            response.setCargoNivel(funcionario.getCargo().getNivel());
+            response.setCargoNivel(funcionario.getCargo().getNivel().name());
         }
 
         if (funcionario.getDepartamento() != null) {

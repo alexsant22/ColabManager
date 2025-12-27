@@ -20,7 +20,7 @@ public class CargoResponse {
         CargoResponse response = new CargoResponse();
         response.setId(cargo.getId());
         response.setNome(cargo.getNome());
-        response.setNivel(cargo.getNivel());
+        response.setNivel(cargo.getNivel().name());
         response.setDescricao(cargo.getDescricao());
         response.setQuantidadeFuncionarios(cargo.getFuncionarios() != null ? cargo.getFuncionarios().size() : 0);
 
