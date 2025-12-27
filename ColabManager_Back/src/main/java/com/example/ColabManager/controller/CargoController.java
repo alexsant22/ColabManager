@@ -40,9 +40,11 @@ public class CargoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdCargo);
     }
 
-    // PUT /cargos - Edita um novo cargo
+    // PUT /cargos/{id} - Atualiza um cargo existente
     @PutMapping("/{id}")
-    public ResponseEntity<CargoResponse> updateCargo(@PathVariable Long id, @RequestBody CargoRequest request) {
+    public ResponseEntity<CargoResponse> updateCargo(
+            @PathVariable Long id,
+            @Valid @RequestBody CargoRequest request) {
         CargoResponse updatedCargo = cargoService.update(id, request);
         return ResponseEntity.ok(updatedCargo);
     }
@@ -52,11 +54,5 @@ public class CargoController {
     public ResponseEntity<Void> deleteCargo(@PathVariable Long id) {
         cargoService.delete(id);
         return ResponseEntity.noContent().build();
-    }
-
-    // Exception Handler para RuntimeException no service
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-        return ResponseEntity.badRequest().body(ex.getMessage());
     }
 }

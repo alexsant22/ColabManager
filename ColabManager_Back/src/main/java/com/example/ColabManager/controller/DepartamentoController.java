@@ -42,7 +42,9 @@ public class DepartamentoController {
 
     // PUT /departamentos/{id} - Atualiza um departamento existente
     @PutMapping("/{id}")
-    public ResponseEntity<DepartamentoResponse> updateDepartamento(@PathVariable Long id, @RequestBody DepartamentoRequest request) {
+    public ResponseEntity<DepartamentoResponse> updateDepartamento(
+            @PathVariable Long id,
+            @Valid @RequestBody DepartamentoRequest request) {
         DepartamentoResponse updatedDepartamento = departamentoService.update(id, request);
         return ResponseEntity.ok(updatedDepartamento);
     }
@@ -52,11 +54,5 @@ public class DepartamentoController {
     public ResponseEntity<Void> deleteDepartamento(@PathVariable Long id) {
         departamentoService.delete(id);
         return ResponseEntity.noContent().build();
-    }
-
-    // Exception Handler para RuntimeException no service
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-        return ResponseEntity.badRequest().body(ex.getMessage());
     }
 }
