@@ -1,32 +1,31 @@
-# Criado para construir e rodar uma aplicação Spring Boot usando Maven e Java 8
-FROM maven:3.8.4-jdk-8 AS build
+# --- Estágio 1: Build (Maven + Java 21) ---
+# Usamos a imagem oficial do Maven que já vem com o Eclipse Temurin JDK 21
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# 1. Copia SÓ o pom.xml primeiro
-# Isso permite que o Docker use o cache das dependências se o pom.xml não mudou
+# 1. Copia apenas o pom.xml para baixar as dependências primeiro (cache)
 COPY pom.xml .
 
-# 2. Baixa as dependências (sem copiar o código fonte ainda)
+# 2. Baixa as dependências para o cache local do Docker
 RUN mvn dependency:go-offline
 
-# 3. Agora sim, copia o código fonte
+# 3. Copia o código fonte do projeto
 COPY src ./src
 
-# 4. Compila o projeto e gera o .jar (Pula os testes para agilizar o build no Docker)
+# 4. Faz o build e gera o .jar (pulando testes para ser mais rápido na criação da imagem)
 RUN mvn clean package -DskipTests
 
-# Estágio final: imagem para rodar a aplicação
-# Usamos uma imagem JRE (apenas execução), que é muito mais leve que o JDK completo
-FROM openjdk:8-jre-slim
+# --- Estágio 2: Runtime (Apenas JRE 21) ---
+# Usamos a imagem leve do Eclipse Temurin JRE 21 para rodar
+FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-# Copia o .jar gerado no estágio de build para a imagem final
-# O *.jar pega qualquer nome de arquivo gerado, renomeando para app.jar
+# Copia o artefato gerado no estágio anterior
 COPY --from=build /app/target/*.jar app.jar
 
-# Expõe a porta padrão do Spring Boot
+# Expõe a porta 8080 (padrão do Spring)
 EXPOSE 8080
 
-# Comando para rodar a aplicação
+# Comando de inicialização
 ENTRYPOINT ["java", "-jar", "app.jar"]
