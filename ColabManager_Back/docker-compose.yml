@@ -1,0 +1,38 @@
+services:
+  # Serviço do Banco de Dados
+  db:
+    image: postgres:15-alpine
+    container_name: colabmanager-db
+    environment:
+      - POSTGRES_DB=ColabManager
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+    ports:
+      - "5433:5432"  # Porta do PC:Porta do Container
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - colab-network
+
+  # Serviço da sua Aplicação Spring Boot
+  app:
+    image: colabmanager-back:1.0
+    container_name: colabmanager-api
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    environment:
+      # Aqui sobrescrevemos o application.properties para usar o nome do container "db"
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/ColabManager
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    networks:
+      - colab-network
+
+volumes:
+  postgres_data:
+
+networks:
+  colab-network:
